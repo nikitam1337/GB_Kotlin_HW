@@ -21,9 +21,8 @@
 import java.util.regex.Pattern
 
 // Интерфейс для команд
-interface Command {
+sealed interface Command {
     fun isValid(): Boolean
-
 }
 
 // Классы команд
@@ -61,10 +60,14 @@ fun readCommand(input: String): Command {
     // Распознавание команды
     return when (parts[0]) {
         "add" -> {
-            when (parts[2]) {
-                "phone" -> AddPhoneCommand(parts[1], parts[3])
-                "email" -> AddEmailCommand(parts[1], parts[3])
-                else -> HelpCommand
+            if (parts.size == 4) {
+                when (parts[2]) {
+                    "phone" -> AddPhoneCommand(parts[1], parts[3])
+                    "email" -> AddEmailCommand(parts[1], parts[3])
+                    else -> HelpCommand
+                }
+            } else {
+                return HelpCommand
             }
         }
 
@@ -94,10 +97,12 @@ fun main() {
                     person = Person(command.name, phone = command.phone)
                     println("Добавлено: ${person!!.name}, телефон: ${person!!.phone}")
                 }
+
                 is AddEmailCommand -> {
                     person = Person(command.name, email = command.email)
                     println("Добавлено: ${person!!.name}, email: ${person!!.email}")
                 }
+
                 is ShowCommand -> {
                     if (person == null) {
                         println("Not initialized")
@@ -105,6 +110,7 @@ fun main() {
                         println("Последняя запись: $person")
                     }
                 }
+
                 is HelpCommand -> {
                     println(
                         "Список доступных команд:\n" +
@@ -115,6 +121,7 @@ fun main() {
                                 "5. show"
                     )
                 }
+
                 is ExitCommand -> return
                 else -> println("Неизвестная команда")
             }
@@ -123,172 +130,3 @@ fun main() {
         }
     }
 }
-
-//
-//import java.util.regex.Pattern
-//
-//// Интерфейс для команд
-//interface Command {
-//    fun isValid(): Boolean
-//}
-//
-//// Базовый sealed класс для команд
-//sealed class CommandImpl : Command {
-//    data class AddPhoneCommand(val name: String, val phone: String) : CommandImpl() {
-//        override fun isValid() = phone.matches(Regex("\\+?\\d+"))
-//    }
-//
-//    data class AddEmailCommand(val name: String, val email: String) : CommandImpl() {
-//        override fun isValid() = email.matches(Regex("\\w+@\\w+\\.\\w+"))
-//    }
-//
-//    object ExitCommand : CommandImpl() {
-//        override fun isValid() = true
-//    }
-//
-//    object HelpCommand : CommandImpl() {
-//        override fun isValid() = true
-//    }
-//
-//    object ShowCommand : CommandImpl() {
-//        override fun isValid() = true
-//    }
-//}
-//
-//// Класс Person
-//data class Person(var name: String, var phone: String? = null, var email: String? = null)
-//
-//fun readCommand(input: String): CommandImpl {
-//    val parts = input.split(" ")
-//    return when (parts[0]) {
-//        "add" -> {
-//            when (parts[2]) {
-//                "phone" -> CommandImpl.AddPhoneCommand(parts[1], parts[3])
-//                "email" -> CommandImpl.AddEmailCommand(parts[1], parts[3])
-//                else -> CommandImpl.HelpCommand
-//            }
-//        }
-//        "exit" -> CommandImpl.ExitCommand
-//        "help" -> CommandImpl.HelpCommand
-//        "show" -> CommandImpl.ShowCommand
-//        else -> CommandImpl.HelpCommand
-//    }
-//}
-//
-//fun main() {
-//    var person: Person? = null
-//    while (true) {
-//        val command = readCommand(readLine()!!)
-//        println(command)
-//        if (command.isValid()) {
-//            when (command) {
-//                is CommandImpl.AddPhoneCommand -> {
-//                    person = Person(command.name, phone = command.phone)
-//                    println("Добавлено: ${person!!.name}, телефон: ${person!!.phone}")
-//                }
-//                is CommandImpl.AddEmailCommand -> {
-//                    person = Person(command.name, email = command.email)
-//                    println("Добавлено: ${person!!.name}, email: ${person!!.email}")
-//                }
-//                is CommandImpl.ShowCommand -> {
-//                    if (person == null) {
-//                        println("Not initialized")
-//                    } else {
-//                        println("Последняя запись: $person")
-//                    }
-//                }
-//                is CommandImpl.ExitCommand -> return
-//                else -> println("Неизвестная команда")
-//            }
-//        } else {
-//            println("Неверный формат команды, попробуйте еще раз")
-//        }
-//    }
-//}
-
-//
-//import java.util.regex.Pattern
-//
-//// Интерфейс для команд
-//interface Command {
-//    fun isValid(): Boolean
-//}
-//
-//// Базовый sealed класс для команд
-//sealed class CommandImpl : Command
-//
-//data class AddPhoneCommand(val name: String, val phone: String) : CommandImpl() {
-//    // Проверка валидности номера телефона
-//    override fun isValid() = phone.matches(Regex("\\+?\\d+"))
-//}
-//
-//data class AddEmailCommand(val name: String, val email: String) : CommandImpl() {
-//    // Проверка валидности электронной почты
-//    override fun isValid() = email.matches(Regex("\\w+@\\w+\\.\\w+"))
-//}
-//
-//object ExitCommand : CommandImpl() {
-//    override fun isValid() = true
-//}
-//
-//object HelpCommand : CommandImpl() {
-//    override fun isValid() = true
-//}
-//
-//object ShowCommand : CommandImpl() {
-//    override fun isValid() = true
-//}
-//
-//// Класс Person
-//data class Person(var name: String, var phone: String? = null, var email: String? = null)
-//
-//fun readCommand(input: String): CommandImpl {
-//    val parts = input.split(" ")
-//    // Распознавание команды
-//    return when (parts[0]) {
-//        "add" -> {
-//            when (parts[2]) {
-//                "phone" -> AddPhoneCommand(parts[1], parts[3])
-//                "email" -> AddEmailCommand(parts[1], parts[3])
-//                else -> HelpCommand
-//            }
-//        }
-//        "exit" -> ExitCommand
-//        "help" -> HelpCommand
-//        "show" -> ShowCommand
-//        else -> HelpCommand
-//    }
-//}
-//
-//fun main() {
-//    var person: Person? = null
-//    while (true) {
-//        // Чтение команды
-//        val command = readCommand(readLine()!!)
-//        println(command)
-//        if (command.isValid()) {
-//            // Обработка команды
-//            when (command) {
-//                is AddPhoneCommand -> {
-//                    person = Person(command.name, phone = command.phone)
-//                    println("Добавлено: ${person!!.name}, телефон: ${person!!.phone}")
-//                }
-//                is AddEmailCommand -> {
-//                    person = Person(command.name, email = command.email)
-//                    println("Добавлено: ${person!!.name}, email: ${person!!.email}")
-//                }
-//                is ShowCommand -> {
-//                    if (person == null) {
-//                        println("Not initialized")
-//                    } else {
-//                        println("Последняя запись: $person")
-//                    }
-//                }
-//                is ExitCommand -> return
-//                else -> println("Неизвестная команда")
-//            }
-//        } else {
-//            println("Неверный формат команды, попробуйте еще раз")
-//        }
-//    }
-//}
